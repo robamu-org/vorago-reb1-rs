@@ -7,7 +7,7 @@ use panic_halt as _;
 
 #[entry]
 fn main() -> ! {
-    let mut dp = va108xx::Peripherals::take();
+    let _dp = va108xx::Peripherals::take();
     loop {
 
     }
