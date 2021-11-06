@@ -6,33 +6,44 @@
 #![no_std]
 
 use cortex_m_rt::entry;
+use rtt_target::{rtt_init_print, rprintln};
 use embedded_hal::digital::v2::{
     ToggleableOutputPin, StatefulOutputPin, OutputPin, InputPin
 };
 use heapless::Vec;
-use panic_halt as _;
-use va108xx_hal::gpio::{Output, Pin, PushPull, Floating, Input};
+use panic_rtt_target as _;
+use va108xx_hal::gpio::{Output, Pin, PushPull};
 use va108xx_hal::prelude::*;
 
 #[allow (dead_code)]
+#[derive (Debug)]
 enum TestCase {
     BlockJ10,
     BlockJ15,
-    // Test input functionality
-    Pa0TiedToPa1,
+    // Tie PORTA[0] to PORTA[1] for these tests!
+    TestBasic,
     TestPullup,
     TestPulldown,
 }
 
 #[entry]
 fn main() -> ! {
+    rtt_init_print!();
+    rprintln!("-- VA108xx Test Application --");
     let mut dp = va108xx::Peripherals::take().unwrap();
     let porta = dp.PORTA.split(&mut dp.SYSCONFIG);
     let portb = dp.PORTB.split(&mut dp.SYSCONFIG);
-    let test_case = TestCase::Pa0TiedToPa1;
+    let test_case = TestCase::TestPulldown;
     let mut pa_vec: Vec<Pin<Output<PushPull>>, 16> = Vec::new();
-    let mut output_pin: Option<Pin<Output<PushPull>>> = None;
-    let mut input_pin: Option<Pin<Input<Floating>>> = None;
+
+    match test_case {
+        TestCase::TestBasic | TestCase::TestPulldown | TestCase::TestPullup => {
+            rprintln!("Test case {:?}. Make sure to tie PORTA[0] to PORTA[1]", test_case);
+        }
+        TestCase::BlockJ10 | TestCase::BlockJ15 => {
+            rprintln!("Test case {:?}", test_case);
+        }
+    }
     match test_case {
         TestCase::BlockJ10 => {
             let pa0 = porta
@@ -96,18 +107,51 @@ fn main() -> ! {
             pa_vec.push(pb2.downgrade()).ok();
             pa_vec.push(pb3.downgrade()).ok();
         }
-        TestCase::Pa0TiedToPa1 => {
-            output_pin = Some(porta
+        TestCase::TestBasic => {
+            // Tie PORTA[0] to PORTA[1] for these tests!
+            let mut out = porta
                 .pa0
                 .into_push_pull_output(&mut dp.IOCONFIG, &mut dp.PORTA)
-                .enable_input(&mut dp.IOCONFIG, true)
-                .downgrade()
-            );
-            input_pin = Some(porta
+                .enable_input(&mut dp.IOCONFIG, true);
+            let input = porta
                 .pa1
-                .into_floating_input(&mut dp.IOCONFIG)
-                .downgrade()
-            );
+                .into_floating_input(&mut dp.IOCONFIG);
+            out.set_high().unwrap();
+            assert!(out.is_set_high().unwrap());
+            assert!(input.is_high().unwrap());
+            out.set_low().unwrap();
+            assert!(out.is_set_low().unwrap());
+            assert!(input.is_low().unwrap());
+        }
+        TestCase::TestPullup => {
+            // Tie PORTA[0] to PORTA[1] for these tests!
+            let input = porta
+                .pa1
+                .into_pull_up_input(&mut dp.IOCONFIG);
+            assert!(input.is_high().unwrap());
+            let mut out = porta.pa0
+                .into_push_pull_output(&mut dp.IOCONFIG, &mut dp.PORTA);
+            out.set_low().unwrap();
+            assert!(input.is_low().unwrap());
+            out.set_high().unwrap();
+            assert!(input.is_high().unwrap());
+            out.into_floating_input(&mut dp.IOCONFIG);
+            assert!(input.is_high().unwrap());
+        }
+        TestCase::TestPulldown => {
+            // Tie PORTA[0] to PORTA[1] for these tests!
+            let input = porta
+                .pa1
+                .into_pull_down_input(&mut dp.IOCONFIG, &mut dp.PORTA);
+            assert!(input.is_low().unwrap());
+            let mut out = porta.pa0
+                .into_push_pull_output(&mut dp.IOCONFIG, &mut dp.PORTA);
+            out.set_low().unwrap();
+            assert!(input.is_low().unwrap());
+            out.set_high().unwrap();
+            assert!(input.is_high().unwrap());
+            out.into_floating_input(&mut dp.IOCONFIG);
+            assert!(input.is_low().unwrap());
         }
     }
 
@@ -118,22 +162,8 @@ fn main() -> ! {
                     pin.toggle().ok();
                 }
             }
-            TestCase::Pa0TiedToPa1 => {
-                let out = output_pin.as_mut().unwrap();
-                out.set_high().unwrap();
-                let mut state = out.is_set_high().unwrap();
-                assert!(state);
-                let input = input_pin.as_ref().unwrap();
-                state = input.is_high().unwrap();
-                assert!(state);
-                out.set_low().unwrap();
-                state = out.is_set_low().unwrap();
-                assert!(state);
-                state = input.is_low().unwrap();
-                assert!(state);
-            }
+            _ => ()
         }
-
         cortex_m::asm::delay(5_000_000);
     }
 }
