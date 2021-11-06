@@ -1,4 +1,7 @@
-//! Minimal blinky for the REB1 board using the HAL API
+//! Test image
+//!
+//! It would be nice to use a test framework like defmt-test, but I have issues
+//! with probe run and it would be better to make the RTT work first
 #![no_main]
 #![no_std]
 

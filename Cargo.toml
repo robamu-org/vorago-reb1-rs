@@ -17,10 +17,11 @@ cortex-m-rt = "0.7.0"
 panic-halt = "0.2"
 embedded-hal = "0.2.6"
 heapless = "0.7"
+rtt-target = { version = "0.3", features = ["cortex-m"] }
 
 [dependencies.va108xx-hal]
 path = "../va108xx-hal-rs"
 
 [dependencies.va108xx]
-version = "0.1.0"
+path = "../va108xx-rs"
 features = ["rt"]
