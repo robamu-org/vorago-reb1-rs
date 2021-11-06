@@ -16,6 +16,9 @@ cortex-m = "0.7.3"
 cortex-m-rt = "0.7.0"
 panic-halt = "0.2"
 
+[dependencies.va108xx-hal]
+path = "../va108xx-hal-rs"
+
 [dependencies.va108xx]
 path = "../va108xx-rs"
 version = "0.1.0"
