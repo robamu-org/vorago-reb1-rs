@@ -15,6 +15,7 @@ categories = ["embedded", "no-std", "hardware-support"]
 cortex-m = "0.7.3"
 cortex-m-rt = "0.7.0"
 panic-halt = "0.2"
+embedded-hal = "0.2.6"
 
 [dependencies.va108xx-hal]
 path = "../va108xx-hal-rs"
