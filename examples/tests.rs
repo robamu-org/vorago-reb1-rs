@@ -18,7 +18,7 @@ enum TestCase {
     // Test input functionality
     Pa0TiedToPa1,
     TestPullup,
-    TestPulldown
+    TestPulldown,
 }
 
 #[entry]
