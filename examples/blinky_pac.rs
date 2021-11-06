@@ -14,19 +14,19 @@ const LED_D4: u32 = 1 << 6;
 fn main() -> ! {
     let dp = va108xx::Peripherals::take().unwrap();
     // Enable all peripheral clocks
-    dp.SYSCONFIG.peripheral_clk_enable.modify(|_, w| unsafe {
-        w.bits(0xffffffff)
-    });
-    dp.PORTA.dir().modify(|_, w| unsafe {
-        w.bits(LED_D2 | LED_D3 | LED_D4)
-    });
-    dp.PORTA.datamask().modify(|_, w| unsafe {
-        w.bits(LED_D2 | LED_D3 | LED_D4)
-    });
+    dp.SYSCONFIG
+        .peripheral_clk_enable
+        .modify(|_, w| unsafe { w.bits(0xffffffff) });
+    dp.PORTA
+        .dir()
+        .modify(|_, w| unsafe { w.bits(LED_D2 | LED_D3 | LED_D4) });
+    dp.PORTA
+        .datamask()
+        .modify(|_, w| unsafe { w.bits(LED_D2 | LED_D3 | LED_D4) });
     loop {
-        dp.PORTA.togout().write(|w| unsafe {
-            w.bits(LED_D2 | LED_D3 | LED_D4)
-        });
+        dp.PORTA
+            .togout()
+            .write(|w| unsafe { w.bits(LED_D2 | LED_D3 | LED_D4) });
         cortex_m::asm::delay(25_000_000);
     }
 }
