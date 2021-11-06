@@ -1,4 +1,4 @@
-//! Minimal blinky for the REB1 board using only PAC features
+//! Minimal blinky for the REB1 board using the HAL API
 #![no_main]
 #![no_std]
 
@@ -12,7 +12,6 @@ use embedded_hal::digital::v2::ToggleableOutputPin;
 fn main() -> ! {
     let mut dp = va108xx::Peripherals::take().unwrap();
     let porta = dp.PORTA.split(&mut dp.SYSCONFIG);
-
     let (mut led1, mut led2, mut led3) = interrupt::free(move |cs| {
         (
             porta.pa10.into_push_pull_output(cs),

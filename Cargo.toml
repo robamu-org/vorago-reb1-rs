@@ -21,6 +21,5 @@ embedded-hal = "0.2.6"
 path = "../va108xx-hal-rs"
 
 [dependencies.va108xx]
-path = "../va108xx-rs"
 version = "0.1.0"
 features = ["rt"]
