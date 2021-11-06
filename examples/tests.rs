@@ -16,7 +16,9 @@ enum TestCase {
     BlockJ10,
     BlockJ15,
     // Test input functionality
-    Pa0TiedToPa1
+    Pa0TiedToPa1,
+    TestPullup,
+    TestPulldown
 }
 
 #[entry]
