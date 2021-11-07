@@ -11,11 +11,8 @@ use va108xx::{self, interrupt};
 fn main() -> ! {
     rtt_init_print!();
     rprintln!("-- Vorago Button Blinky --");
-    loop {
-    }
+    loop {}
 }
 
 #[interrupt]
-fn OC15() {
-
-}
+fn OC15() {}

@@ -2,16 +2,16 @@
 #![no_main]
 #![no_std]
 
+use core::cell::Cell;
+use cortex_m::interrupt::Mutex;
 use cortex_m_rt::entry;
+use hal::{
+    pac::{self, interrupt, Interrupt},
+    prelude::*,
+};
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 use va108xx_hal as hal;
-use hal::{
-    prelude::*,
-    pac::{self, interrupt, Interrupt}
-};
-use core::cell::Cell;
-use cortex_m::interrupt::Mutex;
 use va108xx_hal::time::Hertz;
 
 static MS_COUNTER: Mutex<Cell<u32>> = Mutex::new(Cell::new(0));
@@ -25,10 +25,12 @@ fn main() -> ! {
     rprintln!("-- Vorago system ticks using timers --");
 
     unsafe {
-        dp.SYSCONFIG.peripheral_clk_enable.modify(|_, w| {
-            w.irqsel().set_bit()
-        });
-        dp.SYSCONFIG.tim_clk_enable.modify(|r, w| w.bits(r.bits() | (1 << 0) | (1 << 1)));
+        dp.SYSCONFIG
+            .peripheral_clk_enable
+            .modify(|_, w| w.irqsel().set_bit());
+        dp.SYSCONFIG
+            .tim_clk_enable
+            .modify(|r, w| w.bits(r.bits() | (1 << 0) | (1 << 1)));
         dp.IRQSEL.tim[0].write(|w| w.bits(0x00));
         dp.IRQSEL.tim[1].write(|w| w.bits(0x01));
     }
@@ -55,10 +57,10 @@ fn main() -> ! {
     loop {
         let current_ms = cortex_m::interrupt::free(|cs| MS_COUNTER.borrow(cs).get());
         if current_ms - last_ms >= 1000 {
-             last_ms = current_ms;
-             rprintln!("MS counter: {}", current_ms);
-             let second = cortex_m::interrupt::free(|cs| SEC_COUNTER.borrow(cs).get());
-             rprintln!("Second counter: {}", second);
+            last_ms = current_ms;
+            rprintln!("MS counter: {}", current_ms);
+            let second = cortex_m::interrupt::free(|cs| SEC_COUNTER.borrow(cs).get());
+            rprintln!("Second counter: {}", second);
         }
         cortex_m::asm::delay(10000);
     }
