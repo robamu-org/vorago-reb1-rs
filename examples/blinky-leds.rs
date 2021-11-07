@@ -3,8 +3,8 @@
 #![no_std]
 
 use cortex_m_rt::entry;
-use panic_halt as _;
 use embedded_hal::digital::v2::ToggleableOutputPin;
+use panic_halt as _;
 use va108xx_hal::prelude::*;
 use vorago_reb1::leds::Leds;
 
@@ -13,7 +13,7 @@ const LED_D2: u32 = 1 << 10;
 const LED_D3: u32 = 1 << 7;
 const LED_D4: u32 = 1 << 6;
 
-#[allow (dead_code)]
+#[allow(dead_code)]
 enum LibType {
     Pac,
     Hal,
