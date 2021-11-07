@@ -1,4 +1,8 @@
 //! Blinky examples using the PAC directly, the HAL, or the BSP
+//!
+//! Additional note on LEDs:
+//! Be not afraid: Pulling the GPIOs low makes the LEDs blink. See REB1
+//! schematic for more details.
 #![no_main]
 #![no_std]
 
@@ -23,8 +27,7 @@ enum LibType {
 #[entry]
 fn main() -> ! {
     let mut dp = va108xx::Peripherals::take().unwrap();
-    let porta = dp.PORTA.split(&mut dp.SYSCONFIG);
-
+    let porta = dp.PORTA.split(&mut dp.SYSCONFIG).unwrap();
     let lib_type = LibType::Bsp;
 
     match lib_type {
@@ -39,6 +42,16 @@ fn main() -> ! {
             dp.PORTA
                 .datamask()
                 .modify(|_, w| unsafe { w.bits(LED_D2 | LED_D3 | LED_D4) });
+            for _ in 0..10 {
+                dp.PORTA
+                    .clrout()
+                    .write(|w| unsafe {w.bits(LED_D2 | LED_D3 | LED_D4)});
+                cortex_m::asm::delay(5_000_000);
+                dp.PORTA
+                    .setout()
+                    .write(|w| unsafe {w.bits(LED_D2 | LED_D3 | LED_D4)});
+                cortex_m::asm::delay(5_000_000);
+            }
             loop {
                 dp.PORTA
                     .togout()
@@ -56,11 +69,23 @@ fn main() -> ! {
             let mut led3 = porta
                 .pa6
                 .into_push_pull_output(&mut dp.IOCONFIG, &mut dp.PORTA);
+            for _ in 0..10 {
+                led1.set_low().ok();
+                led2.set_low().ok();
+                led3.set_low().ok();
+                cortex_m::asm::delay(5_000_000);
+                led1.set_high().ok();
+                led2.set_high().ok();
+                led3.set_high().ok();
+                cortex_m::asm::delay(5_000_000);
+            }
             loop {
                 led1.toggle().ok();
+                cortex_m::asm::delay(5_000_000);
                 led2.toggle().ok();
+                cortex_m::asm::delay(5_000_000);
                 led3.toggle().ok();
-                cortex_m::asm::delay(25_000_000);
+                cortex_m::asm::delay(5_000_000);
             }
         }
         LibType::Bsp => {
