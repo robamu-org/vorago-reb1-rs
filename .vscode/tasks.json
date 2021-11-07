@@ -4,11 +4,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "rust: cargo build minimal blinky",
+            "label": "rust: cargo build blinky",
             "type": "shell",
             "command": "~/.cargo/bin/cargo", // note: full path to the cargo
             "args": [
-                "build", "-p", "vorago-reb1", "--example", "minimal-blinky",
+                "build", "--example", "blinky-leds",
             ],
             "group": {
                 "kind": "build",
