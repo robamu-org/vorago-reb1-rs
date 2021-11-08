@@ -28,7 +28,7 @@ enum LibType {
 fn main() -> ! {
     let mut dp = va108xx::Peripherals::take().unwrap();
     let porta = dp.PORTA.split(&mut dp.SYSCONFIG).unwrap();
-    let lib_type = LibType::Bsp;
+    let lib_type = LibType::Hal;
 
     match lib_type {
         LibType::Pac => {
@@ -60,6 +60,20 @@ fn main() -> ! {
             }
         }
         LibType::Hal => {
+            let mut pina0 = porta
+                .pa0 
+                .into_push_pull_output(&mut dp.IOCONFIG, &mut dp.PORTA);
+            let mut faulty_led = porta
+                .pa2
+                .into_push_pull_output(&mut dp.IOCONFIG, &mut dp.PORTA);
+            loop {
+                faulty_led.set_high();
+                pina0.set_high();
+                cortex_m::asm::delay(10_000_000);
+                faulty_led.set_low();
+                pina0.set_low();
+                cortex_m::asm::delay(10_000_000);
+            }
             let mut led1 = porta
                 .pa10
                 .into_push_pull_output(&mut dp.IOCONFIG, &mut dp.PORTA);
