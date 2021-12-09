@@ -1,9 +1,11 @@
 #![no_main]
 #![no_std]
 use cortex_m_rt::entry;
+use embedded_hal::spi::MODE_3;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
 use va108xx_hal::{
+    gpio::PinsA,
     pac::{self, interrupt},
     prelude::*,
     spi::{self, Spi},
@@ -28,24 +30,31 @@ fn main() -> ! {
     }
 
     let pinsa = PinsA::new(&mut dp.SYSCONFIG, None, dp.PORTA);
-    let mut spi_cfg = spi::SpiConfig::default();
+    let spi_cfg = spi::SpiConfig::default();
     let (sck, mosi, miso) = (
-        pinsa.pa20.into_funsel_1(),
-        pinsa.pa19.into_funsel_1(),
-        pinsa.pa18.into_funsel_1(),
+        pinsa.pa20.into_funsel_2(),
+        pinsa.pa19.into_funsel_2(),
+        pinsa.pa18.into_funsel_2(),
     );
     let transfer_cfg = spi::TransferConfig::new(
-        spi_clk, mode, hw_cs, blockmode, sod
+        1.mhz(),
+        MODE_3,
+        Some(pinsa.pa16.into_funsel_2()),
+        true,
+        false,
     );
-    let spi = Spi::spia(
-        dp.SPIA,
+    let mut spi = Spi::spib(
+        dp.SPIB,
         (sck, miso, mosi),
         50.mhz(),
         spi_cfg,
         Some(&mut dp.SYSCONFIG),
-        None,
+        Some(&transfer_cfg.downgrade()),
     );
     loop {
+        let mut send_buf: [u8; 3] = [0x00, 0x01, 0x02];
+        spi.transfer(&mut send_buf[..]).unwrap();
+        delay.delay_ms(500);
     }
 }
 
